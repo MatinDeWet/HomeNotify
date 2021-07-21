@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const ApiKeySchema = require('../schemas/apikey');
-const DeviceSchema = require('../schemas/devices');
+const DeviceSchema = require('../schemas/device');
 const NotificationSchema = require('../schemas/notification');
 const UserSchema = require('../schemas/user');
 

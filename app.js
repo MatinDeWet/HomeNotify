@@ -26,8 +26,10 @@ app.listen(port, () => {
 });
 //#endregion
 
-//#region Routing Tables
-//Create a Routed to allow us to seperate our concerns
+//#region Routing Tables (Create a Routed to allow us to seperate our concerns)
 const notificationRouter = require('./routes/notifications');
 app.use('/notification', notificationRouter);
+
+const userRouter = require('./routes/users');
+app.use('/user', userRouter);
 //#endregion
