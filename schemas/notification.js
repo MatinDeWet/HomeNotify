@@ -1,6 +1,6 @@
 //use mongoose to create a model for the database
 const mongoose = require('mongoose');
-const mongooseDevice = require('../schemas/devices');
+const mongooseSchemaDevice = require('../schemas/device');
 
 //vreate a model via a Schema
 const notificationSchema = new mongoose.Schema({
@@ -22,11 +22,11 @@ const notificationSchema = new mongoose.Schema({
         default: false,
     },
     NotificationSentFrom: {
-        type: mongooseDevice,
+        type: mongooseSchemaDevice,
         require: true,
     },
     NotificationSentTo: {
-        type: mongooseDevice,
+        type: mongooseSchemaDevice,
     },
 });
 

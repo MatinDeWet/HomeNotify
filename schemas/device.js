@@ -1,7 +1,7 @@
 //use mongoose to create a model for the database
 const mongoose = require('mongoose');
 
-//vreate a model via a Schema
+//create a model via a Schema
 const deviceSchema = new mongoose.Schema({
     DeviceName: {
         type: String,
