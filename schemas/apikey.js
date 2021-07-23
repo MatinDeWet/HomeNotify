@@ -16,8 +16,7 @@ const apiSchema = new mongoose.Schema({
     },
     Active: {
         type: Boolean,
-        require: true,
-        maxLength: 100,
+        default: true,
     },
 });
 

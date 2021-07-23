@@ -1,5 +1,6 @@
 //modules brought in (allows for there use), make use of Router
 const express = require('express');
+const API = require('../jsModules/apiKey');
 const notificationRouter = express.Router();
 const {
     findNotification,
@@ -14,7 +15,7 @@ const {
 
 //#region GET
 //view all
-notificationRouter.get('/view', async(req, res) => {
+notificationRouter.get('/view', API.ValidateKey, async(req, res) => {
     const notification = await findNotification();
 
     if (notification.error != null) {
@@ -25,7 +26,7 @@ notificationRouter.get('/view', async(req, res) => {
 });
 
 //view single by id
-notificationRouter.get('/viewById', async(req, res) => {
+notificationRouter.get('/viewById', API.ValidateKey, async(req, res) => {
     const notification = await findNotificationById(req.headers.notification_id);
 
     if (notification.error != null) {
@@ -36,7 +37,7 @@ notificationRouter.get('/viewById', async(req, res) => {
 });
 
 //view single on ReadStatus
-notificationRouter.get('/viewByReadStatus', async(req, res) => {
+notificationRouter.get('/viewByReadStatus', API.ValidateKey, async(req, res) => {
     const notification = await findNotificationByReadStatus(req.headers.read_status);
 
     if (notification.error != null) {
@@ -49,7 +50,7 @@ notificationRouter.get('/viewByReadStatus', async(req, res) => {
 
 //#region POST
 //Create one
-notificationRouter.post('/create', async(req, res) => {
+notificationRouter.post('/create', API.ValidateKey, async(req, res) => {
     const notification = await CreateNewNotification(
         req.body.NotificationType,
         req.body.NotificationDescription,
@@ -67,7 +68,7 @@ notificationRouter.post('/create', async(req, res) => {
 
 //#region PUT
 //update All by fields id (Permisstion Required)
-notificationRouter.put('/updateAllFields', async(req, res) => {
+notificationRouter.put('/updateAllFields', API.ValidateKey, async(req, res) => {
     const notification = await UpdateAllFieldsOfNotification(
         req.body.AdminUserName,
         req.body.AdminPassword,
@@ -88,7 +89,7 @@ notificationRouter.put('/updateAllFields', async(req, res) => {
 });
 
 //update read status
-notificationRouter.put('/updateReadStatus', async(req, res) => {
+notificationRouter.put('/updateReadStatus', API.ValidateKey, async(req, res) => {
     const notification = await UpdateNotificationReadStatus(
         req.body.NotificationId,
         req.body.NotificationReadStatus
@@ -105,7 +106,7 @@ notificationRouter.put('/updateReadStatus', async(req, res) => {
 
 //#region DELETE
 //delete by id
-notificationRouter.delete('/delete', async(req, res) => {
+notificationRouter.delete('/delete', API.ValidateKey, async(req, res) => {
     const notification = await DeleteNotification(
         req.body.NotificationId
     );

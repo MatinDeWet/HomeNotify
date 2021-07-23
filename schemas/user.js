@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    Active: {
+        type: Boolean,
+        default: true,
+    },
 });
 
 module.exports = userSchema;
