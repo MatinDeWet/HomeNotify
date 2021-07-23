@@ -33,7 +33,7 @@ const findNotificationById = async(id) => {
 const findNotificationByReadStatus = async(status) => {
     try {
         const notification = await Notification.find({ NotificationReadStatus: status });
-        if (!notification) {
+        if (notification.length <= 0) {
             return { error: { code: 404, message: 'Notification was not found' } };
         } else {
             return notification;
@@ -43,7 +43,40 @@ const findNotificationByReadStatus = async(status) => {
     }
 };
 
-const CreateNewNotification = async(type, description, from, to) => {
+const findNotificationByType = async(type) => {
+    try {
+        const notification = await Notification.find({ NotificationType: type });
+        if (notification.length <= 0) {
+            return { error: { code: 404, message: 'Notification was not found' } };
+        } else {
+            return notification;
+        }
+    } catch (err) {
+        return { error: { code: 500, message: err } };
+    }
+};
+
+const SendNotificaitonToOne = async(type, description, from, to) => {
+    const notification = new Notification({
+        NotificationType: type,
+        NotificationDescription: description,
+        NotificationSentFrom: from,
+        NotificationSentTo: to,
+    });
+
+
+    try {
+        const response = await notification.save();
+        return response;
+    } catch (err) {
+        return { error: { code: 500, message: err } };
+    }
+};
+
+const SendNotificaitonToAll = async(type, description, from) => {
+    //TODO: add implimintation
+
+
     const notification = new Notification({
         NotificationType: type,
         NotificationDescription: description,
@@ -123,7 +156,9 @@ module.exports = {
     findNotification,
     findNotificationById,
     findNotificationByReadStatus,
-    CreateNewNotification,
+    findNotificationByType,
+    SendNotificaitonToOne,
+    SendNotificaitonToAll,
     UpdateAllFieldsOfNotification,
     UpdateNotificationReadStatus,
     DeleteNotification,

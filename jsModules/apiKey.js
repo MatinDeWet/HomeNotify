@@ -32,12 +32,12 @@ const ValidateKey = async(req, res, next) => {
     try {
         const foundKey = await User.countDocuments({ "APIKey.Key": api_key });
         if (foundKey <= 0) {
-            res.status(403).send({ error: { code: 403, message: 'Insuficient Permissions' } });
+            res.status(403).json({ error: { code: 403, message: 'Insuficient Permissions' } });
         } else {
             next();
         }
     } catch (err) {
-        res.status(500).send({ error: { code: 500, message: err } });
+        res.status(500).json({ error: { code: 500, message: err } });
     }
 
 };

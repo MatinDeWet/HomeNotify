@@ -27,7 +27,7 @@ userRouter.get('/view', API.ValidateKey, async(req, res) => {
 });
 //View by Id
 userRouter.get('/viewById', API.ValidateKey, async(req, res) => {
-    const user = await findUserById(req.headers.user_id);
+    const user = await findUserById(req.body.user_id);
 
     if (user.error != null) {
         res.status(user.code).json(user);
@@ -38,7 +38,7 @@ userRouter.get('/viewById', API.ValidateKey, async(req, res) => {
 
 //View by key
 userRouter.get('/viewByKey', API.ValidateKey, async(req, res) => {
-    const user = await ValidateUserByApiKey(req.headers.key);
+    const user = await ValidateUserByApiKey(req.body.key);
     res.send(user);
     // if (user.error != null) {
     //     res.status(user.code).json(user);
@@ -79,6 +79,8 @@ userRouter.put('/updateStatus', API.ValidateKey, async(req, res) => {
         res.status(201).json(user);
     }
 });
+
+//update user
 userRouter.put('/update', API.ValidateKey, async(req, res) => {
     const user = await UpdateUser(
         req.body.UserId,

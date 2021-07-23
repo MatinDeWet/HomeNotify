@@ -1,8 +1,10 @@
 //modules brought in (allows for there use), make use of Router
-require('dotenv').config();
 const express = require('express');
+const API = require('../jsModules/apiKey');
 const deviceRouter = express.Router();
-const Device = require('../models/ModelCollection').DeviceModel;
+const {
+
+} = require("../jsModules/device");
 
 
 //#region GET

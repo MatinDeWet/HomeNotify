@@ -6,7 +6,9 @@ const {
     findNotification,
     findNotificationById,
     findNotificationByReadStatus,
-    CreateNewNotification,
+    findNotificationByType,
+    SendNotificaitonToOne,
+    SendNotificaitonToAll,
     UpdateAllFieldsOfNotification,
     UpdateNotificationReadStatus,
     DeleteNotification,
@@ -19,7 +21,7 @@ notificationRouter.get('/view', API.ValidateKey, async(req, res) => {
     const notification = await findNotification();
 
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }
@@ -27,21 +29,32 @@ notificationRouter.get('/view', API.ValidateKey, async(req, res) => {
 
 //view single by id
 notificationRouter.get('/viewById', API.ValidateKey, async(req, res) => {
-    const notification = await findNotificationById(req.headers.notification_id);
+    const notification = await findNotificationById(req.body.notificationId);
 
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }
 });
 
-//view single on ReadStatus
+//view By ReadStatus
 notificationRouter.get('/viewByReadStatus', API.ValidateKey, async(req, res) => {
-    const notification = await findNotificationByReadStatus(req.headers.read_status);
+    const notification = await findNotificationByReadStatus(req.body.readStatus);
 
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
+    } else {
+        res.status(201).json(notification);
+    }
+});
+
+//view By Type
+notificationRouter.get('/viewByType', API.ValidateKey, async(req, res) => {
+    const notification = await findNotificationByType(req.body.type);
+
+    if (notification.error != null) {
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }
@@ -49,9 +62,9 @@ notificationRouter.get('/viewByReadStatus', API.ValidateKey, async(req, res) => 
 //#endregion
 
 //#region POST
-//Create one
-notificationRouter.post('/create', API.ValidateKey, async(req, res) => {
-    const notification = await CreateNewNotification(
+//Create notificaiton sent to one device
+notificationRouter.post('/SendToOne', API.ValidateKey, async(req, res) => {
+    const notification = await SendNotificaitonToOne(
         req.body.NotificationType,
         req.body.NotificationDescription,
         req.body.NotificationSentFrom,
@@ -59,7 +72,22 @@ notificationRouter.post('/create', API.ValidateKey, async(req, res) => {
     );
 
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
+    } else {
+        res.status(201).json(notification);
+    }
+});
+
+//Create notificaiton sent to all device
+notificationRouter.post('/SendToOne', API.ValidateKey, async(req, res) => {
+    const notification = await SendNotificaitonToAll(
+        req.body.NotificationType,
+        req.body.NotificationDescription,
+        req.body.NotificationSentFrom
+    );
+
+    if (notification.error != null) {
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }
@@ -82,7 +110,7 @@ notificationRouter.put('/updateAllFields', API.ValidateKey, async(req, res) => {
     );
 
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }
@@ -96,7 +124,7 @@ notificationRouter.put('/updateReadStatus', API.ValidateKey, async(req, res) => 
     );
 
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }
@@ -111,7 +139,7 @@ notificationRouter.delete('/delete', API.ValidateKey, async(req, res) => {
         req.body.NotificationId
     );
     if (notification.error != null) {
-        res.status(notification.code).json(notification);
+        res.status(notification.error.code).json(notification);
     } else {
         res.status(201).json(notification);
     }

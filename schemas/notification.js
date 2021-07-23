@@ -27,6 +27,7 @@ const notificationSchema = new mongoose.Schema({
     },
     NotificationSentTo: {
         type: mongooseSchemaDevice,
+        require: true,
     },
 });
 
