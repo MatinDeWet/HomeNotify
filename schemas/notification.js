@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const mongooseSchemaDevice = require('../schemas/device');
 
-//vreate a model via a Schema
+//create a model via a Schema
 const notificationSchema = new mongoose.Schema({
     NotificationCreationDate: {
         type: Date,

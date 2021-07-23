@@ -1,50 +1,48 @@
 //modules brought in (allows for there use), make use of Router
-require('dotenv').config();
 const express = require('express');
 const notificationRouter = express.Router();
-const Notification = require('../models/ModelCollection').NotificationModel;
+const {
+    findNotification,
+    findNotificationById,
+    findNotificationByReadStatus,
+    CreateNewNotification,
+    UpdateAllFieldsOfNotification,
+    UpdateNotificationReadStatus,
+    DeleteNotification,
+} = require("../jsModules/notification");
 
 
 //#region GET
 //view all
 notificationRouter.get('/view', async(req, res) => {
-    try {
-        const notification = await Notification.find();
-        if (!notification) {
-            res.status(404).json({ message: 'Notification was not found' });
-        } else {
-            res.status(201).json(notification);
-        }
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    const notification = await findNotification();
+
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
+    } else {
+        res.status(201).json(notification);
     }
 });
 
 //view single by id
-notificationRouter.get('/viewById/:notification_id', async(req, res) => {
-    try {
-        const notification = await Notification.findById(req.params.notification_id);
-        if (!notification) {
-            res.status(404).json({ message: 'Notification was not found' });
-        } else {
-            res.status(201).json(notification);
-        }
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+notificationRouter.get('/viewById', async(req, res) => {
+    const notification = await findNotificationById(req.headers.notification_id);
+
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
+    } else {
+        res.status(201).json(notification);
     }
 });
 
 //view single on ReadStatus
-notificationRouter.get('/viewByReadStatus/:readStatus', async(req, res) => {
-    try {
-        const notification = await Notification.find({ NotificationReadStatus: req.params.readStatus });
-        if (!notification) {
-            res.status(404).json({ message: 'Notification was not found' });
-        } else {
-            res.status(201).json(notification);
-        }
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+notificationRouter.get('/viewByReadStatus', async(req, res) => {
+    const notification = await findNotificationByReadStatus(req.headers.read_status);
+
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
+    } else {
+        res.status(201).json(notification);
     }
 });
 //#endregion
@@ -52,103 +50,69 @@ notificationRouter.get('/viewByReadStatus/:readStatus', async(req, res) => {
 //#region POST
 //Create one
 notificationRouter.post('/create', async(req, res) => {
-    const notification = new Notification({
-        NotificationCreationDate: req.body.NotificationCreationDate,
-        NotificationType: req.body.NotificationType,
-        NotificationDescription: req.body.NotificationDescription,
-        NotificationReadStatus: req.body.NotificationReadStatus,
-        NotificationSentFrom: req.body.NotificationSentFrom,
-        NotificationSentTo: req.body.NotificationSentTo,
-    });
+    const notification = await CreateNewNotification(
+        req.body.NotificationType,
+        req.body.NotificationDescription,
+        req.body.NotificationSentFrom,
+        req.body.NotificationSentTo
+    );
 
-    try {
-        const result = await notification.save();
-        res.status(201).json(result);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
+    } else {
+        res.status(201).json(notification);
     }
 });
 //#endregion
 
 //#region PUT
 //update All by fields id (Permisstion Required)
-notificationRouter.put('/updateAllFields/:notification_id', async(req, res) => {
-    if (process.env.PERMISSION_USERNAME == req.body.UserName && process.env.PERMISSION_PASSWORD == req.body.Password) {
-        const notification = {
-            NotificationCreationDate: req.body.NotificationCreationDate,
-            NotificationType: req.body.NotificationType,
-            NotificationDescription: req.body.NotificationDescription,
-            NotificationReadStatus: req.body.NotificationReadStatus,
-            NotificationSentFrom: req.body.NotificationSentFrom,
-            NotificationSentTo: req.body.NotificationSentTo,
-        };
+notificationRouter.put('/updateAllFields', async(req, res) => {
+    const notification = await UpdateAllFieldsOfNotification(
+        req.body.AdminUserName,
+        req.body.AdminPassword,
+        req.body.NotificationId,
+        req.body.NotificationCreationDate,
+        req.body.NotificationType,
+        req.body.NotificationDescription,
+        req.body.NotificationReadStatus,
+        req.body.NotificationSentFrom,
+        req.body.NotificationSentTo
+    );
 
-        try {
-            Notification.findByIdAndUpdate(req.params.notification_id, notification, (err, docs) => {
-                if (err) {
-                    res.status(500).json({ message: err.message });
-                } else {
-                    if (docs != null) {
-                        res.status(201).json(docs);
-                    } else {
-                        res.status(404).json({ message: "The Item Requested does not Exist" });
-                    }
-
-                }
-            });
-        } catch (err) {
-            res.status(500).json({ message: err.message });
-        }
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
     } else {
-        res.status(401).json({ message: "Insufficient Permission" });
+        res.status(201).json(notification);
     }
 });
 
-//update by id
-notificationRouter.put('/update/:notification_id', async(req, res) => {
-    const notification = {
-        NotificationType: req.body.NotificationType,
-        NotificationDescription: req.body.NotificationDescription,
-        NotificationReadStatus: req.body.NotificationReadStatus,
-    };
+//update read status
+notificationRouter.put('/updateReadStatus', async(req, res) => {
+    const notification = await UpdateNotificationReadStatus(
+        req.body.NotificationId,
+        req.body.NotificationReadStatus
+    );
 
-    try {
-        Notification.findByIdAndUpdate(req.params.notification_id, notification, (err, docs) => {
-            if (err) {
-                res.status(500).json({ message: err.message });
-            } else {
-                if (docs != null) {
-                    res.status(201).json(docs);
-                } else {
-                    res.status(404).json({ message: "The Item Requested does not Exist" });
-                }
-
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
+    } else {
+        res.status(201).json(notification);
     }
 });
+
 //#endregion
 
 //#region DELETE
 //delete by id
-notificationRouter.delete('/delete/:notification_id', async(req, res) => {
-    try {
-        Notification.findByIdAndDelete(req.params.notification_id, (err, docs) => {
-            if (err) {
-                res.status(500).json({ message: err.message });
-            } else {
-                if (docs != null) {
-                    res.status(201).json(docs);
-                } else {
-                    res.status(404).json({ message: "The Item Requested does not Exist" });
-                }
-
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+notificationRouter.delete('/delete', async(req, res) => {
+    const notification = await DeleteNotification(
+        req.body.NotificationId
+    );
+    if (notification.error != null) {
+        res.status(notification.code).json(notification);
+    } else {
+        res.status(201).json(notification);
     }
 });
 //#endregion
