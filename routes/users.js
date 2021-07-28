@@ -54,7 +54,8 @@ userRouter.get('/viewByKey', API.ValidateKey, async(req, res) => {
 userRouter.post('/create', async(req, res) => {
     const user = await CreateUser(
         req.body.Name,
-        req.body.Email
+        req.body.Email,
+        req.body.Roles
     );
 
     if (user.error != null) {

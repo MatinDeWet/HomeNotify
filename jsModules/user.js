@@ -33,13 +33,14 @@ const findUserById = async(id) => {
     }
 };
 
-const CreateUser = async(name, email) => {
+const CreateUser = async(name, email, userRoles) => {
     const newUser = new User({
         Name: name,
         Email: email,
         APIKey: {
             Key: GenerateAPIKey(),
-        }
+        },
+        Roles: userRoles
     });
 
     try {
@@ -98,6 +99,21 @@ const DeleteUser = async(id) => {
         return { error: { code: 500, message: err } };
     }
 };
+
+//#region User Validation
+const ReportAccount = async(inputKey) => {
+    try {
+        await User.updateOne({ "APIKey.Key": inputKey }, { $inc: { "KeyProtectionFailCount": 1 } });
+        return true;
+    } catch (err) {
+        return false;
+    }
+};
+
+const GetUserByApiKey = async(inputKey) => {
+    return await User.findOne({ "APIKey.Key": inputKey });
+};
+//#endregion
 //#endregion
 
 //#region Export
@@ -108,5 +124,7 @@ module.exports = {
     UpdateUserStatus,
     UpdateUser,
     DeleteUser,
+    ReportAccount,
+    GetUserByApiKey,
 };
 //#endregion

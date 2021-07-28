@@ -26,18 +26,16 @@ const GenerateAPIKey = () => {
     return output;
 };
 
-const ValidateKey = async(req, res, next) => {
-    let api_key = req.header('x-api-key');
-
+const ValidateKey = async(api_key) => {
     try {
-        const foundKey = await User.countDocuments({ "APIKey.Key": api_key });
+        const foundKey = await User.countDocuments({ "APIKey.Key": api_key, "KeyProtectionFailCount": { $lt: 5 } });
         if (foundKey <= 0) {
-            res.status(403).json({ error: { code: 403, message: 'Insuficient Permissions' } });
+            return false;
         } else {
-            next();
+            return true;
         }
     } catch (err) {
-        res.status(500).json({ error: { code: 500, message: err } });
+        return false;
     }
 
 };

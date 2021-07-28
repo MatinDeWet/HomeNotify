@@ -5,6 +5,7 @@ const ApiKeySchema = require('../schemas/apikey');
 const DeviceSchema = require('../schemas/device');
 const NotificationSchema = require('../schemas/notification');
 const UserSchema = require('../schemas/user');
+const RequestSchema = require('../schemas/request');
 
 
 module.exports = {
@@ -12,4 +13,5 @@ module.exports = {
     DeviceModel: mongoose.model('Device', DeviceSchema),
     NotificationModel: mongoose.model('Notification', NotificationSchema),
     UserModel: mongoose.model('User', UserSchema),
+    RequestModel: mongoose.model('Request', RequestSchema),
 }

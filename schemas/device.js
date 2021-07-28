@@ -16,14 +16,10 @@ const deviceSchema = new mongoose.Schema({
     DeviceIPv4: {
         type: String,
         require: true,
-        minLength: 15,
-        maxLength: 15,
     },
     DeviceMacAddress: {
         type: String,
         require: true,
-        minLength: 17,
-        maxLength: 17,
     },
 });
 

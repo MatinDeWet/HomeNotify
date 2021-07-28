@@ -7,7 +7,7 @@ const Notification = require('../models/ModelCollection').NotificationModel;
 const findNotification = async() => {
     try {
         const notification = await Notification.find();
-        if (!notification) {
+        if (notification.length <= 0) {
             return { error: { code: 404, message: 'Notification was not found' } };
         } else {
             return notification;

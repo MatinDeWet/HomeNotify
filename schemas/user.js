@@ -22,6 +22,14 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    KeyProtectionFailCount: {
+        type: Number,
+        default: 0,
+    },
+    Roles: {
+        type: [String],
+        require: true,
+    },
     Active: {
         type: Boolean,
         default: true,

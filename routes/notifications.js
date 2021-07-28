@@ -1,6 +1,6 @@
 //modules brought in (allows for there use), make use of Router
 const express = require('express');
-const API = require('../jsModules/apiKey');
+const API = require('../middleware/apiAuthentication');
 const notificationRouter = express.Router();
 const {
     findNotification,
@@ -17,7 +17,7 @@ const {
 
 //#region GET
 //view all
-notificationRouter.get('/view', API.ValidateKey, async(req, res) => {
+notificationRouter.get('/view', API.AuthorizeRequest, API.AuthoriseUserRole(["admin1"]), async(req, res) => {
     const notification = await findNotification();
 
     if (notification.error != null) {
@@ -28,7 +28,7 @@ notificationRouter.get('/view', API.ValidateKey, async(req, res) => {
 });
 
 //view single by id
-notificationRouter.get('/viewById', API.ValidateKey, async(req, res) => {
+notificationRouter.get('/viewById', API.AuthorizeRequest, async(req, res) => {
     const notification = await findNotificationById(req.body.notificationId);
 
     if (notification.error != null) {
@@ -39,7 +39,7 @@ notificationRouter.get('/viewById', API.ValidateKey, async(req, res) => {
 });
 
 //view By ReadStatus
-notificationRouter.get('/viewByReadStatus', API.ValidateKey, async(req, res) => {
+notificationRouter.get('/viewByReadStatus', API.AuthorizeRequest, async(req, res) => {
     const notification = await findNotificationByReadStatus(req.body.readStatus);
 
     if (notification.error != null) {
@@ -50,7 +50,7 @@ notificationRouter.get('/viewByReadStatus', API.ValidateKey, async(req, res) => 
 });
 
 //view By Type
-notificationRouter.get('/viewByType', API.ValidateKey, async(req, res) => {
+notificationRouter.get('/viewByType', API.AuthorizeRequest, async(req, res) => {
     const notification = await findNotificationByType(req.body.type);
 
     if (notification.error != null) {
@@ -63,7 +63,7 @@ notificationRouter.get('/viewByType', API.ValidateKey, async(req, res) => {
 
 //#region POST
 //Create notificaiton sent to one device
-notificationRouter.post('/SendToOne', API.ValidateKey, async(req, res) => {
+notificationRouter.post('/SendToOne', API.AuthorizeRequest, async(req, res) => {
     const notification = await SendNotificaitonToOne(
         req.body.NotificationType,
         req.body.NotificationDescription,
@@ -79,7 +79,7 @@ notificationRouter.post('/SendToOne', API.ValidateKey, async(req, res) => {
 });
 
 //Create notificaiton sent to all device
-notificationRouter.post('/SendToOne', API.ValidateKey, async(req, res) => {
+notificationRouter.post('/SendToOne', API.AuthorizeRequest, async(req, res) => {
     const notification = await SendNotificaitonToAll(
         req.body.NotificationType,
         req.body.NotificationDescription,
@@ -96,7 +96,7 @@ notificationRouter.post('/SendToOne', API.ValidateKey, async(req, res) => {
 
 //#region PUT
 //update All by fields id (Permisstion Required)
-notificationRouter.put('/updateAllFields', API.ValidateKey, async(req, res) => {
+notificationRouter.put('/updateAllFields', API.AuthorizeRequest, async(req, res) => {
     const notification = await UpdateAllFieldsOfNotification(
         req.body.AdminUserName,
         req.body.AdminPassword,
@@ -117,7 +117,7 @@ notificationRouter.put('/updateAllFields', API.ValidateKey, async(req, res) => {
 });
 
 //update read status
-notificationRouter.put('/updateReadStatus', API.ValidateKey, async(req, res) => {
+notificationRouter.put('/updateReadStatus', API.AuthorizeRequest, async(req, res) => {
     const notification = await UpdateNotificationReadStatus(
         req.body.NotificationId,
         req.body.NotificationReadStatus
@@ -134,7 +134,7 @@ notificationRouter.put('/updateReadStatus', API.ValidateKey, async(req, res) => 
 
 //#region DELETE
 //delete by id
-notificationRouter.delete('/delete', API.ValidateKey, async(req, res) => {
+notificationRouter.delete('/delete', API.AuthorizeRequest, async(req, res) => {
     const notification = await DeleteNotification(
         req.body.NotificationId
     );
