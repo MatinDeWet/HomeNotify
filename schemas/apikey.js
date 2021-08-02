@@ -11,13 +11,6 @@ const apiSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    DateExpire: {
-        type: Date,
-    },
-    Active: {
-        type: Boolean,
-        default: true,
-    },
 });
 
 module.exports = apiSchema;

@@ -1,6 +1,6 @@
 require('dotenv').config();
 //#region Variables
-const Device = require('../models/ModelCollection').DeviceModel;
+const Device = require('../../models/ModelCollection').DeviceModel;
 //#endregion
 
 //#region DBAccess

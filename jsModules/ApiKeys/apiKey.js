@@ -1,6 +1,6 @@
 require('dotenv').config();
 //#region variables
-const User = require('../models/ModelCollection').UserModel;
+const User = require('../../models/ModelCollection').UserModel;
 //#endregion
 
 //#region Methods
@@ -17,12 +17,27 @@ const GenStringBase64 = () => {
     }
 }
 
-const GenerateAPIKey = () => {
+const GenerateAPIKey = async() => {
     let randomChars = GenStringBase64();
-    var output = '';
-    for (var i = 0; i < process.env.API_KEY_STRING_LENGTH; i++) {
-        output += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+    let canContinue = false;
+    let output = '';
+
+    while (!canContinue) {
+        output = '';
+        for (var i = 0; i < process.env.API_KEY_STRING_LENGTH; i++) {
+            output += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+        }
+        try {
+            const foundKey = await User.countDocuments({ "APIKey.Key": output });
+            if (foundKey <= 0) {
+                canContinue = true;
+            }
+        } catch (err) {
+            canContinue = false;
+        }
+
     }
+
     return output;
 };
 

@@ -2,114 +2,40 @@ require('dotenv').config();
 
 //modules brought in (allows for there use), make use of Router
 const express = require('express');
-const API = require('../jsModules/apiKey');
+const API = require('../jsModules/ApiKeys/apiKey');
 const userRouter = express.Router();
 const {
-    findUser,
-    findUserById,
     CreateUser,
-    UpdateUserStatus,
-    UpdateUser,
-    DeleteUser,
-} = require("../jsModules/user");
+    GetAllUsers,
+    GetSingleUser,
+} = require("../jsModules/Users/user");
 
 
 //#region GET
 //view one
-userRouter.get('/view', API.ValidateKey, async(req, res) => {
-    const user = await findUser();
-
-    if (user.error != null) {
-        res.status(user.code).json(user);
-    } else {
-        res.status(201).json(user);
-    }
+userRouter.get('/viewall', async(req, res) => {
+    const user = await GetAllUsers();
+    return res.status(user.code).json(user.data);
 });
-//View by Id
-userRouter.get('/viewById', API.ValidateKey, async(req, res) => {
-    const user = await findUserById(req.body.user_id);
-
-    if (user.error != null) {
-        res.status(user.code).json(user);
-    } else {
-        res.status(201).json(user);
-    }
+//view one
+userRouter.get('/viewOne', async(req, res) => {
+    const user = await GetSingleUser(req.user);
+    return res.status(user.code).json(user.data);
 });
-
-//View by key
-userRouter.get('/viewByKey', API.ValidateKey, async(req, res) => {
-    const user = await ValidateUserByApiKey(req.body.key);
-    res.send(user);
-    // if (user.error != null) {
-    //     res.status(user.code).json(user);
-    // } else {
-    //     res.status(201).json(user);
-    // }
-});
-
 //#endregion
 
 //#region POST
-//Create one
-userRouter.post('/create', async(req, res) => {
-    const user = await CreateUser(
-        req.body.Name,
-        req.body.Email,
-        req.body.Roles
-    );
-
-    if (user.error != null) {
-        res.status(user.code).json(user);
-    } else {
-        res.status(201).json(user);
-    }
+//create one
+userRouter.get('/createOne', async(req, res) => {
+    const user = await CreateUser(req.name, req.email, req.password, req.userRoles);
+    return res.status(user.code).json(user.data);
 });
 //#endregion
 
 //#region PUT
-//update user status
-userRouter.put('/updateStatus', API.ValidateKey, async(req, res) => {
-    const user = await UpdateUserStatus(
-        req.body.UserId,
-        req.body.UserStatus
-    );
-
-    if (user.error != null) {
-        res.status(user.code).json(user);
-    } else {
-        res.status(201).json(user);
-    }
-});
-
-//update user
-userRouter.put('/update', API.ValidateKey, async(req, res) => {
-    const user = await UpdateUser(
-        req.body.UserId,
-        req.body.Name,
-        req.body.Email,
-        req.body.UserStatus
-    );
-
-    if (user.error != null) {
-        res.status(user.code).json(user);
-    } else {
-        res.status(201).json(user);
-    }
-});
 //#endregion
 
 //#region DELETE
-//delete by id
-userRouter.delete('/delete', API.ValidateKey, async(req, res) => {
-    const user = await DeleteUser(
-        req.body.UserId
-    );
-    if (user.error != null) {
-        res.status(user.code).json(user);
-    } else {
-        res.status(201).json(user);
-    }
-});
 //#endregion
 
 //#region Export Modules

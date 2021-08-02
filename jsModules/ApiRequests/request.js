@@ -1,7 +1,7 @@
 require('dotenv').config();
 //#region variables
-const Request = require('../models/ModelCollection').RequestModel;
-const User = require('../models/ModelCollection').UserModel;
+const Request = require('../../models/ModelCollection').RequestModel;
+const User = require('../../models/ModelCollection').UserModel;
 //#endregion
 
 //#region Methods
@@ -33,7 +33,6 @@ const RecordRequest = async(key, dateTime, header) => {
     }
 
 };
-
 //#endregion
 
 

@@ -1,6 +1,6 @@
 require('dotenv').config();
 //#region Variables
-const Notification = require('../models/ModelCollection').NotificationModel;
+const Notification = require('../../models/ModelCollection').NotificationModel;
 //#endregion
 
 //#region DBAccess

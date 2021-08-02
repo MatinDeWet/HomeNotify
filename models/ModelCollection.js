@@ -6,6 +6,7 @@ const DeviceSchema = require('../schemas/device');
 const NotificationSchema = require('../schemas/notification');
 const UserSchema = require('../schemas/user');
 const RequestSchema = require('../schemas/request');
+const FaultSchema = require('../schemas/fault');
 
 
 module.exports = {
@@ -14,4 +15,5 @@ module.exports = {
     NotificationModel: mongoose.model('Notification', NotificationSchema),
     UserModel: mongoose.model('User', UserSchema),
     RequestModel: mongoose.model('Request', RequestSchema),
+    FaultModel: mongoose.model('Fault', FaultSchema),
 }

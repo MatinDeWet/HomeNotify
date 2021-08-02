@@ -12,11 +12,15 @@ const userSchema = new mongoose.Schema({
     Email: {
         type: String,
         require: true,
-        maxLength: 100,
+        maxLength: 255,
+    },
+    Password: {
+        type: String,
+        require: true,
+        maxLength: 255,
     },
     APIKey: {
         type: mongooseSchemaApiKey,
-        require: true,
     },
     DateJoined: {
         type: Date,
