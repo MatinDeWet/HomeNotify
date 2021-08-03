@@ -18,7 +18,7 @@ userRouter.get('/viewall', async(req, res) => {
     return res.status(user.code).json(user.data);
 });
 //view one
-userRouter.get('/viewOne', async(req, res) => {
+userRouter.get('/viewone', async(req, res) => {
     const user = await GetSingleUser(req.user);
     return res.status(user.code).json(user.data);
 });
@@ -26,8 +26,8 @@ userRouter.get('/viewOne', async(req, res) => {
 
 //#region POST
 //create one
-userRouter.get('/createOne', async(req, res) => {
-    const user = await CreateUser(req.name, req.email, req.password, req.userRoles);
+userRouter.post('/createone', async(req, res) => {
+    const user = await CreateUser(req.body.name, req.headers.authorization, req.body.userRoles);
     return res.status(user.code).json(user.data);
 });
 //#endregion

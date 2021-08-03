@@ -1,25 +1,36 @@
 require('dotenv').config();
 //#region Variables
-const User = require('../../models/ModelCollection').UserModel;
 const { GenerateAPIKey, } = require('../ApiKeys/apiKey');
-const { FindAll, FindOne, TestEmailDuplicate, } = require('../Users/userService');
+const { FindAll, FindOne, TestEmailDuplicate, CreateNew, } = require('../Users/userService');
 //#endregion
 
 //#region InsertInformation
 const CreateApiKey = async(email, password) => {
-    const userId = await GetUserId(email, password);
-    const newKey = await GenerateAPIKey();
+    // const userId = await GetUserId(email, password);
+    // const newKey = await GenerateAPIKey();
 
-    User.updateOne({ "_id": userId }, { "APIKey.Key": newKey });
+    // User.updateOne({ "_id": userId }, { "APIKey.Key": newKey });
 };
 //#endregion
 
 //#region main methods
-const CreateUser = async(name, email, password, userRoles) => {
+const CreateUser = async(name, emailPassword, userRoles) => {
+
+    //#region Check if infomation is not null
+    if (name == undefined || emailPassword == undefined || userRoles == undefined) {
+        return { code: 400, data: "Please insure that the following information is sent with your request (name - [name], email - [email], password - [password], roles - [userRoles])" };
+    };
+    //#endregion
+
+    //#region Define email and password
+    const credentialcombustion = GetUsernamePasswordFromHeader(emailPassword);
+    const email = credentialcombustion[0];
+    const password = credentialcombustion[1];
+    //#endregion
+
     //#region Email validation with Regex
-    //insure email is correct format
-    let emailFormat = new RegExp("^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
-    if (!emailFormat.test(email)) {
+    const emailFormat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!emailFormat.test(String(email).toLowerCase())) {
         return { code: 409, data: "please insure the provided email is valid" };
     }
     //#endregion
@@ -35,30 +46,25 @@ const CreateUser = async(name, email, password, userRoles) => {
     }
     //#endregion
 
-
-
+    //#region Create user object
     //create a user object
-    const createdUser = new User({
+    const newUser = {
         Name: name,
         Email: email,
         Password: password,
         Roles: userRoles
-    });
+    };
+    //#endregion
 
-
-
-    try {
-        const user = await createdUser.save();
-
-        const returnedCredentials = {
-            "Active": user.Active,
-            "Email": user.Email,
-        };
-        return returnedCredentials;
-    } catch (err) {
-        FaultLogger("JsModule:User", "CreateUser:CreateUser", err);
-        return { error: { code: 500, message: "Could not create User" } };
+    //#region create and send New user
+    const returnedUser = await CreateNew(newUser);
+    console.log(returnedUser);
+    if (returnedUser.errorId == null) {
+        return { code: 200, data: returnedUser.user };
+    } else {
+        return { code: 500, data: "Could not process the request Your referance is: " + returnedUser.errorId };
     }
+    //#endregion
 };
 const GetAllUsers = async() => {
     const returnedUser = await FindAll();
@@ -82,15 +88,23 @@ const GetSingleUser = async(requestUser) => {
 
 //#region borrowed methods
 const GetUserByApiKey = async(inputKey) => {
-    return await User.findOne({ "APIKey.Key": inputKey });
+    // return await User.findOne({ "APIKey.Key": inputKey });
 };
 const ReportAccount = async(inputKey) => {
-    try {
-        await User.updateOne({ "APIKey.Key": inputKey }, { $inc: { "KeyProtectionFailCount": 1 } });
-        return true;
-    } catch (err) {
-        return false;
-    }
+    // try {
+    //     await User.updateOne({ "APIKey.Key": inputKey }, { $inc: { "KeyProtectionFailCount": 1 } });
+    //     return true;
+    // } catch (err) {
+    //     return false;
+    // }
+};
+//#endregion
+
+//#region Support methods
+const GetUsernamePasswordFromHeader = (headerInput) => {
+    const base64Credentials = headerInput.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    return [username, password] = credentials.split(':');
 };
 //#endregion
 

@@ -35,6 +35,23 @@ const TestEmailDuplicate = async(inputEmail) => {
     }
     return returnedUsers
 };
+const CreateNew = async(inputUser) => {
+    const user = new User(inputUser);
+    let returnedUsers = { errorId: null, user: null };
+    try {
+        returnedUsers.user = await user.save();
+        returnedUsers.user = {
+            Name: returnedUsers.user.Name,
+            Email: returnedUsers.user.Email,
+            Active: returnedUsers.user.Active,
+            Roles: returnedUsers.user.Roles
+        };
+    } catch (error) {
+        returnedUsers.errorId = await FaultLogger("User", "Create New");
+    }
+
+    return returnedUsers;
+};
 //#endregion
 
 //#region export
@@ -42,5 +59,6 @@ module.exports = {
     FindAll,
     FindOne,
     TestEmailDuplicate,
+    CreateNew,
 };
 //#endregion
