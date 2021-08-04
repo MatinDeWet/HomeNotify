@@ -6,6 +6,7 @@ const API = require('../jsModules/ApiKeys/apiKey');
 const userRouter = express.Router();
 const {
     CreateUser,
+    CreateApiKeyForUser,
     GetAllUsers,
     GetSingleUser,
 } = require("../jsModules/Users/user");
@@ -28,6 +29,10 @@ userRouter.get('/viewone', async(req, res) => {
 //create one
 userRouter.post('/createone', async(req, res) => {
     const user = await CreateUser(req.body.name, req.headers.authorization, req.body.userRoles);
+    return res.status(user.code).json(user.data);
+});
+userRouter.post('/createapikey', async(req, res) => {
+    const user = await CreateApiKeyForUser(req.body.name, req.headers.authorization);
     return res.status(user.code).json(user.data);
 });
 //#endregion

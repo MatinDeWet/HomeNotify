@@ -1,5 +1,6 @@
 require('dotenv').config();
 //#region variables
+const { FindAll, FindOneByKey, TestEmailDuplicate, CreateNew, FindOneByemailAndPassword, } = require('../ApiKeys/apiKeyService');
 const User = require('../../models/ModelCollection').UserModel;
 //#endregion
 
@@ -20,6 +21,7 @@ const GenStringBase64 = () => {
 const GenerateAPIKey = async() => {
     let randomChars = GenStringBase64();
     let canContinue = false;
+    let failCount = 0;
     let output = '';
 
     while (!canContinue) {
@@ -27,15 +29,14 @@ const GenerateAPIKey = async() => {
         for (var i = 0; i < process.env.API_KEY_STRING_LENGTH; i++) {
             output += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
         }
-        try {
-            const foundKey = await User.countDocuments({ "APIKey.Key": output });
-            if (foundKey <= 0) {
-                canContinue = true;
-            }
-        } catch (err) {
-            canContinue = false;
+        const existingKey = CheckIfKeyExists(output);
+        if (existingKey.errorId != null) {
+            failCount++;
         }
-
+        if (failCount > 5) {
+            return { code: 500, data: "Could not process the request Your referance is: " + existingKey.errorId };
+        }
+        canContinue = existingKey.canContinue;
     }
 
     return output;

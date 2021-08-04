@@ -15,13 +15,23 @@ const FindAll = async() => {
     }
     return returnedUsers;
 };
-const FindOne = async(inputKey) => {
+const FindOneByKey = async(inputKey) => {
     let returnedUsers = { errorId: null, user: null };
     try {
         const user = await User.findOne({ "APIKey.Key": inputKey }, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1 });
         if (user.length > 0) { returnedUsers.user = user; };
     } catch (err) {
-        returnedUsers.errorId = await FaultLogger("User", "Find One");
+        returnedUsers.errorId = await FaultLogger("User", "Find One by key");
+    }
+    return returnedUsers;
+};
+const FindOneByemailAndPassword = async(email, password) => {
+    let returnedUsers = { errorId: null, user: null };
+    try {
+        const user = await User.findOne({ Email: email, Password: password }, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1 });
+        if (user.length > 0) { returnedUsers.user = user; };
+    } catch (err) {
+        returnedUsers.errorId = await FaultLogger("User", "Find One by email and password");
     }
     return returnedUsers;
 };
@@ -57,7 +67,8 @@ const CreateNew = async(inputUser) => {
 //#region export
 module.exports = {
     FindAll,
-    FindOne,
+    FindOneByKey,
+    FindOneByemailAndPassword,
     TestEmailDuplicate,
     CreateNew,
 };
