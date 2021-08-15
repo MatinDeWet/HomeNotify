@@ -1,6 +1,7 @@
 //use mongoose to create a model for the database
 const mongoose = require('mongoose');
 const mongooseSchemaApiKey = require('../schemas/apikey');
+const mongooseSchemaDevice = require('../schemas/device');
 
 //create a model via a Schema
 const userSchema = new mongoose.Schema({
@@ -26,13 +27,19 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    KeyProtectionFailCount: {
+    LoginFailCount: {
         type: Number,
         default: 0,
     },
     Roles: {
         type: [String],
         require: true,
+    },
+    Devices: {
+        type: [mongooseSchemaDevice],
+    },
+    DateLastRequest: {
+        type: Date,
     },
     Active: {
         type: Boolean,

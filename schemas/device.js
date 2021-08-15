@@ -13,11 +13,7 @@ const deviceSchema = new mongoose.Schema({
         require: true,
         maxLength: 100,
     },
-    DeviceIPv4: {
-        type: String,
-        require: true,
-    },
-    DeviceMacAddress: {
+    DeviceIdentifier: {
         type: String,
         require: true,
     },

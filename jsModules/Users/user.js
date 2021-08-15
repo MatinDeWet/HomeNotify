@@ -1,27 +1,30 @@
 require('dotenv').config();
 //#region Variables
-const { GenerateAPIKey, } = require('../ApiKeys/apiKey');
-const { FindAll, FindOneByKey, TestEmailDuplicate, CreateNew, FindOneByemailAndPassword, } = require('../Users/userService');
+const FailReply = {
+    CODE500: { code: 500, data: "Could not process request" },
+    CODE400: { code: 400, data: "Please insure that all fields are filled and is a valid format" },
+    CODE404: { code: 404, data: "User could not be found" },
+    CODE409: { code: 409, data: "The information given already exists" },
+}
+const { GenerateAPIKey, UpdateKey } = require('../ApiKeys/apiKey');
+const { FindAll, TestEmailDuplicate, CreateNew, FindOneByemailAndPassword, } = require('../Users/userService');
 //#endregion
 
 //#region main methods
 const CreateUser = async(name, emailPassword, userRoles) => {
-    //#region validate user name email and role
-    const validEmailPassword = ValidateUserNameEmailPassword(name, emailPassword, userRoles);
-    if (validEmailPassword.code != undefined) { return validEmailPassword; }
-    const email = validEmailPassword[0];
-    const password = validEmailPassword[1];
+    //#region validate user information
+    if (!TestFieldsFilled([name, emailPassword, userRoles])) { return FailReply.CODE400; };
+    const userCredentials = GetUsernamePasswordFromHeader(emailPassword);
+    if (!TestValidateEmailFormat(userCredentials[0])) { return FailReply.CODE400; };
+    const email = userCredentials[0];
+    const password = userCredentials[1];
     //#endregion
 
     //#region Check for Duplicate Emails
     //insure email does not already exist
     const userEmail = await TestEmailDuplicate(email);
-    if (userEmail.errorId != null) {
-        return { code: 500, data: "Could not process the request Your referance is: " + userEmail.errorId };
-    }
-    if (userEmail.duplicatesFound) {
-        return { code: 409, data: "email could not be registered" };
-    }
+    if (userEmail.errorId != null) { return FailReply.CODE500; }
+    if (userEmail.duplicatesFound) { return FailReply.CODE409; }
     //#endregion
 
     //#region Create user object
@@ -36,111 +39,103 @@ const CreateUser = async(name, emailPassword, userRoles) => {
 
     //#region create and send New user
     const returnedUser = await CreateNew(newUser);
-    if (returnedUser.errorId == null) {
-        return { code: 200, data: returnedUser.user };
-    } else {
-        return { code: 500, data: "Could not process the request Your referance is: " + returnedUser.errorId };
-    }
+    if (returnedUser.errorId != null) { return FailReply.CODE500; }
+    return { code: 200, data: returnedUser.user };
     //#endregion
 };
-const CreateApiKeyForUser = async(name, emailPassword) => {
-    //#region validate user name email and role
-    const validEmailPassword = ValidateUserNameEmailPassword(name, emailPassword, userRoles);
-    if (validEmailPassword.code != undefined) { return validEmailPassword; }
-    const email = validEmailPassword[0];
-    const password = validEmailPassword[1];
+const CreateApiKeyForUser = async(emailPassword) => {
+    //#region validate user information
+    if (!TestFieldsFilled([emailPassword])) { return FailReply.CODE400; };
+    const userCredentials = GetUsernamePasswordFromHeader(emailPassword);
+    if (!TestValidateEmailFormat(userCredentials[0])) { return FailReply.CODE400; };
+    const email = userCredentials[0];
+    const password = userCredentials[1];
     //#endregion
 
-    //#region Check if user is valid and log user
-    const loggedUser = TestForExistingUser(email, password);
+    //#region Check if user is valid and create user object
+    const loggedUser = await TestForExistingUser(email, password);
+    if (loggedUser.errorId != null) { return FailReply.CODE500; }
+    if (loggedUser.user == null) { return FailReply.CODE404; }
     //#endregion
 
     //#region Generate API key
     const newKey = await GenerateAPIKey();
-    //TODO implement abbility to create new key
-    User.updateOne({ "_id": loggedUser._id }, { "APIKey.Key": newKey });
+    if (newKey == null) { return FailReply.CODE500; }
+    //#endregion
+
+    //#region Update API Key
+    const user = await UpdateKey(loggedUser.user._id, newKey);
+    if (user.errorId != null) { return FailReply.CODE500; }
+    //#endregion
+
+    //#region send new Key
+    return { code: 200, data: { "user-key": newKey } };
     //#endregion
 };
 const GetAllUsers = async() => {
     const returnedUser = await FindAll();
-    if (returnedUser.errorId == null) {
-        if (returnedUser.user == null) { return { code: 404, data: "No Users Found" }; };
-        if (returnedUser.user != null) { return { code: 200, data: returnedUser.user }; };
-    } else {
-        return { code: 500, data: "Could not process the request Your referance is: " + returnedUser.errorId };
-    }
-};
-const GetSingleUser = async(requestUser) => {
-    const returnedUser = await FindOneByKey(requestUser.APIKey.Key);
-    if (returnedUser.errorId == null) {
-        if (returnedUser.user == null) { return { code: 404, data: "No User Found" }; };
-        if (returnedUser.user != null) { return { code: 200, data: returnedUser.user }; };
-    } else {
-        return { code: 500, data: "Could not process the request Your referance is: " + returnedUser.errorId };
-    }
-};
-//#endregion
+    if (returnedUser.errorId != null) { return FailReply.CODE500; }
+    if (returnedUser.user == null) { return FailReply.CODE404; }
 
-//#region borrowed methods
-const GetUserByApiKey = async(inputKey) => {
-    // return await User.findOne({ "APIKey.Key": inputKey });
+    return { code: 200, data: returnedUser.user };
 };
-const ReportAccount = async(inputKey) => {
-    // try {
-    //     await User.updateOne({ "APIKey.Key": inputKey }, { $inc: { "KeyProtectionFailCount": 1 } });
-    //     return true;
-    // } catch (err) {
-    //     return false;
-    // }
+const GetSingleUserByEmailAndPassword = async(emailPassword) => {
+    //#region validate user information
+    if (!TestFieldsFilled([emailPassword])) { return FailReply.CODE400; };
+    const userCredentials = GetUsernamePasswordFromHeader(emailPassword);
+    if (!TestValidateEmailFormat(userCredentials[0])) { return FailReply.CODE400; };
+    const email = userCredentials[0];
+    const password = userCredentials[1];
+    //#endregion
+
+    //#region Check if user is valid and create user object
+    const loggedUser = await TestForExistingUser(email, password);
+    if (loggedUser.errorId != null) { return FailReply.CODE500; }
+    if (loggedUser.user == null) { return FailReply.CODE404; }
+    //#endregion
+
+    //#region return
+    return {
+        code: 200,
+        data: {
+            Name: loggedUser.user.Name,
+            Email: loggedUser.user.Email,
+            DateJoined: loggedUser.user.DateJoined,
+            Roles: loggedUser.user.Roles,
+            Active: loggedUser.user.Active,
+            Key: loggedUser.user.APIKey.Key
+        }
+    }
+    //#endregion
 };
 //#endregion
 
 //#region Support methods
+const TestFieldsFilled = (input) => {
+    if (input.length == 0) {
+        return false;
+    }
+    for (let index = 0; index < input.length; index++) {
+        if (input[index] == undefined || input[index] == null) {
+            return false;
+        }
+    }
+    return true;
+};
 const GetUsernamePasswordFromHeader = (headerInput) => {
     const base64Credentials = headerInput.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
     return [username, password] = credentials.split(':');
 };
-const ValidateEmailFormat = (email) => {
+const TestValidateEmailFormat = (email) => {
     const emailFormat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (!emailFormat.test(String(email).toLowerCase())) {
         return false;
-    } else {
-        return true;
     }
-};
-const ValidateUserNameEmailPassword = (name, emailPassword, userRoles) => {
-    //#region Check if infomation is not null
-    if (name == undefined || emailPassword == undefined || userRoles == undefined) {
-        return { code: 400, data: "Please insure that the following information is sent with your request (name - [name], email - [email], password - [password], roles - [userRoles])" };
-    };
-    //#endregion
-
-    //#region Define email and password
-    const credentialcombustion = GetUsernamePasswordFromHeader(emailPassword);
-    //#endregion
-
-    //#region Email validation with Regex
-    if (!ValidateEmailFormat(credentialcombustion[0])) {
-        return { code: 409, data: "please insure the provided email is valid" };
-    }
-    if (credentialcombustion[1] == undefined || credentialcombustion[1].trim().length == 0) {
-        return { code: 409, data: "please insure the provided password is valid" };
-    }
-    //#endregion
-
-    return credentialcombustion;
+    return true;
 };
 const TestForExistingUser = async(email, password) => {
-    //#region Check if user exists
-    const returnedUser = await FindOneByemailAndPassword(email, password)
-    if (returnedUser.errorId == null) {
-        if (returnedUser.user == null) { return { code: 404, data: "No Users Found" }; };
-        if (returnedUser.user != null) { return returnedUser; };
-    } else {
-        return { code: 500, data: "Could not process the request Your referance is: " + returnedUser.errorId };
-    }
-    //#endregion
+    return await FindOneByemailAndPassword(email, password);
 };
 //#endregion
 
@@ -151,10 +146,6 @@ module.exports = {
     CreateUser,
     CreateApiKeyForUser,
     GetAllUsers,
-    GetSingleUser,
-
-    //borrowed methods
-    GetUserByApiKey,
-    ReportAccount,
+    GetSingleUserByEmailAndPassword,
 };
 //#endregion

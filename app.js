@@ -32,4 +32,7 @@ app.use('/notification', notificationRouter);
 
 const userRouter = require('./routes/users');
 app.use('/user', userRouter);
+
+const deviceRouter = require('./routes/devices');
+app.use('/device', deviceRouter);
 //#endregion

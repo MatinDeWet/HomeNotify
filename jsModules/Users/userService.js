@@ -18,8 +18,8 @@ const FindAll = async() => {
 const FindOneByKey = async(inputKey) => {
     let returnedUsers = { errorId: null, user: null };
     try {
-        const user = await User.findOne({ "APIKey.Key": inputKey }, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1 });
-        if (user.length > 0) { returnedUsers.user = user; };
+        const user = await User.findOne({ "APIKey.Key": inputKey });
+        returnedUsers.user = user;
     } catch (err) {
         returnedUsers.errorId = await FaultLogger("User", "Find One by key");
     }
@@ -28,8 +28,9 @@ const FindOneByKey = async(inputKey) => {
 const FindOneByemailAndPassword = async(email, password) => {
     let returnedUsers = { errorId: null, user: null };
     try {
-        const user = await User.findOne({ Email: email, Password: password }, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1 });
-        if (user.length > 0) { returnedUsers.user = user; };
+        const user = await User.findOne({ Email: email, Password: password }, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1, "APIKey.Key": 1 });
+
+        if (user != null) { returnedUsers.user = user; };
     } catch (err) {
         returnedUsers.errorId = await FaultLogger("User", "Find One by email and password");
     }
@@ -62,6 +63,15 @@ const CreateNew = async(inputUser) => {
 
     return returnedUsers;
 };
+const UpdateRequestTimeStamp = async(id, time) => {
+    let returnedUsers = { errorId: null, user: null };
+    try {
+        returnedUsers.user = await User.updateOne({ "_id": id }, { $set: { "DateLastRequest": time } });
+    } catch (error) {
+        returnedUsers.errorId = await FaultLogger("User", "Update request time stamp");
+    }
+    return await returnedUsers;
+};
 //#endregion
 
 //#region export
@@ -71,5 +81,6 @@ module.exports = {
     FindOneByemailAndPassword,
     TestEmailDuplicate,
     CreateNew,
+    UpdateRequestTimeStamp,
 };
 //#endregion
