@@ -10,17 +10,20 @@ const {
     CreateApiKeyForUser,
     GetAllUsers,
     GetSingleUserByEmailAndPassword,
+    DeleteUser,
 } = require("../jsModules/Users/user");
 
+//use the following for move validation
+////, API.ValidateDevice, API.AuthoriseUserRole([ROLE.ADMIN])
 
 //#region GET
 //view one
-userRouter.get('/viewall', API.ValidateRequest, API.ValidateDevice, API.AuthoriseUserRole([ROLE.ADMIN]), async(req, res) => {
+userRouter.get('/viewall', API.ValidateUserByCredentials, API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
     const user = await GetAllUsers();
     return res.status(user.code).json(user.data);
 });
 //view one
-userRouter.get('/viewself', async(req, res) => {
+userRouter.get('/viewself', API.AuthoriseUserRole([ROLE.VIEW]), async(req, res) => {
     const user = await GetSingleUserByEmailAndPassword(req.headers.authorization);
     return res.status(user.code).json(user.data);
 });
@@ -28,11 +31,11 @@ userRouter.get('/viewself', async(req, res) => {
 
 //#region POST
 //create one
-userRouter.post('/createone', async(req, res) => {
+userRouter.post('/createone', API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
     const user = await CreateUser(req.body.name, req.headers.authorization, req.body.userRoles);
     return res.status(user.code).json(user.data);
 });
-userRouter.post('/createapikey', async(req, res) => {
+userRouter.post('/createapikey', API.ValidateUserByCredentials, API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
     const user = await CreateApiKeyForUser(req.headers.authorization);
     return res.status(user.code).json(user.data);
 });
@@ -42,6 +45,11 @@ userRouter.post('/createapikey', async(req, res) => {
 //#endregion
 
 //#region DELETE
+userRouter.delete('/deleteone', API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
+
+    const user = await DeleteUser(req.headers.authorization);
+    return res.status(user.code).json(user.data);
+});
 //#endregion
 
 //#region Export Modules

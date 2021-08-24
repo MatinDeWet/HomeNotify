@@ -15,10 +15,31 @@ const FailReply = {
     CODE409: { code: 409, data: "The information given already exists" },
 };
 const ROLE = require('../jsModules/ApiRoles/apiRoles').ROLE;
-const { FindOneByKey, UpdateRequestTimeStamp } = require('../jsModules/Users/userService');
+const { FindOneByKey, UpdateRequestTimeStamp, FindOneByemailAndPassword } = require('../jsModules/Users/userService');
 //#endregion
 
 //#region main methods
+const ValidateUserByCredentials = async(req, res, next) => {
+    const emailPassword = req.headers.authorization;
+
+    //#region validate user information
+    if (!TestFieldsFilled([emailPassword])) { return FailReply.CODE400; };
+    const userCredentials = GetUsernamePasswordFromHeader(emailPassword);
+    if (!TestValidateEmailFormat(userCredentials[0])) { return FailReply.CODE400; };
+    const email = userCredentials[0];
+    const password = userCredentials[1];
+    //#endregion
+
+    //#region Check if user is valid and create user object
+    const loggedUser = await FindOneByemailAndPassword(email, password);
+    if (loggedUser.errorId != null) { return FailReply.CODE500; }
+    if (loggedUser.user == null) { return FailReply.CODE404; }
+    //#endregion
+
+    req.user = loggedUser.user;
+    next();
+};
+
 const ValidateRequest = async(req, res, next) => {
     //#region variables
     const apiKey = req.header('x-api-key');
@@ -114,10 +135,23 @@ const TestFieldsFilled = (input) => {
     }
     return true;
 };
+const GetUsernamePasswordFromHeader = (headerInput) => {
+    const base64Credentials = headerInput.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    return [username, password] = credentials.split(':');
+};
+const TestValidateEmailFormat = (email) => {
+    const emailFormat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!emailFormat.test(String(email).toLowerCase())) {
+        return false;
+    }
+    return true;
+};
 //#endregion
 
 //#region Export Methods
 module.exports = {
+    ValidateUserByCredentials,
     ValidateRequest,
     ValidateDevice,
     AuthoriseUserRole,

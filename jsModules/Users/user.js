@@ -7,7 +7,7 @@ const FailReply = {
     CODE409: { code: 409, data: "The information given already exists" },
 }
 const { GenerateAPIKey, UpdateKey } = require('../ApiKeys/apiKey');
-const { FindAll, TestEmailDuplicate, CreateNew, FindOneByemailAndPassword, } = require('../Users/userService');
+const { FindAll, TestEmailDuplicate, CreateNew, FindOneByemailAndPassword, FindOneAndDeleteUser, } = require('../Users/userService');
 //#endregion
 
 //#region main methods
@@ -108,6 +108,22 @@ const GetSingleUserByEmailAndPassword = async(emailPassword) => {
     }
     //#endregion
 };
+const DeleteUser = async(emailPassword) => {
+    //#region validate user information
+    if (!TestFieldsFilled([emailPassword])) { return FailReply.CODE400; };
+    const userCredentials = GetUsernamePasswordFromHeader(emailPassword);
+    if (!TestValidateEmailFormat(userCredentials[0])) { return FailReply.CODE400; };
+    const email = userCredentials[0];
+    const password = userCredentials[1];
+    //#endregion
+
+    const deletedUser = await FindOneAndDeleteUser(email, password);
+
+    return {
+        code: 200,
+        data: "Deleted Client"
+    }
+};
 //#endregion
 
 //#region Support methods
@@ -147,5 +163,6 @@ module.exports = {
     CreateApiKeyForUser,
     GetAllUsers,
     GetSingleUserByEmailAndPassword,
+    DeleteUser,
 };
 //#endregion

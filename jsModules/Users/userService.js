@@ -8,7 +8,7 @@ const { FaultLogger, } = require('../Faults/fault');
 const FindAll = async() => {
     let returnedUsers = { errorId: null, user: null };
     try {
-        const user = await User.find({}, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1 });
+        const user = await User.find({}, { Name: 1, Email: 1, DateJoined: 1, Roles: 1, Active: 1, Devices: 1 });
         if (user.length > 0) { returnedUsers.user = user; };
     } catch (err) {
         returnedUsers.errorId = await FaultLogger("User", "Find All");
@@ -72,6 +72,15 @@ const UpdateRequestTimeStamp = async(id, time) => {
     }
     return await returnedUsers;
 };
+const FindOneAndDeleteUser = async(email, password) => {
+    let returnedUsers = { errorId: null, user: null };
+    try {
+        returnedUsers.user = await User.findOneAndDelete({ Email: email, Password: password })
+    } catch (error) {
+        returnedUsers.errorId = await FaultLogger("User", "Find One And Delete User");
+    }
+    return await returnedUsers;
+};
 //#endregion
 
 //#region export
@@ -82,5 +91,6 @@ module.exports = {
     TestEmailDuplicate,
     CreateNew,
     UpdateRequestTimeStamp,
+    FindOneAndDeleteUser,
 };
 //#endregion

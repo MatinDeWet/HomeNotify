@@ -17,7 +17,7 @@ deviceRouter.get('/findall', API.ValidateRequest, async(req, res) => {
 //#endregion
 
 //#region POST
-deviceRouter.post('/createone', API.ValidateRequest, async(req, res) => {
+deviceRouter.post('/createone', API.ValidateUserByCredentials, async(req, res) => {
     const device = await CreateDevice(req.user, req.body.name, req.body.type);
     return res.status(device.code).json(device.data);
 });

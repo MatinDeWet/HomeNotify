@@ -35,4 +35,7 @@ app.use('/user', userRouter);
 
 const deviceRouter = require('./routes/devices');
 app.use('/device', deviceRouter);
+
+const networkMonitorRouter = require('./routes/networkMonitor');
+app.use('/networkmonitor', networkMonitorRouter);
 //#endregion
