@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 
 //create a model via a Schema
 const speedTestSchema = new mongoose.Schema({
+    TestTime: {
+        type: Date,
+        default: Date.now,
+    },
     Ping: {
         type: Number,
         require: true,

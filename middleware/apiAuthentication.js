@@ -40,55 +40,40 @@ const ValidateUserByCredentials = async(req, res, next) => {
     next();
 };
 
-const ValidateRequest = async(req, res, next) => {
-    //#region variables
+const ValidateUserByApiKey = async(req, res, next) => {
     const apiKey = req.header('x-api-key');
-    const requestVerificationAgent = req.header('request-verification-agent');
+
+    //#region validate user information
+    if (!TestFieldsFilled([apiKey])) { return FailReply.CODE400; };
+    if (!TestValidateBase64Format(apiKey)) { return FailReply.CODE400; };
     //#endregion
 
-    //#region Check is information required is provided
-    if (!TestFieldsFilled([apiKey, requestVerificationAgent])) { return res.status(FailReply.CODE400.code).send(FailReply.CODE400.data); }
+    //#region Check if user is valid and create user object
+    const loggedUser = await FindOneByKey(apiKey);
+    if (loggedUser.errorId != null) { return FailReply.CODE500; }
+    if (loggedUser.user == null) { return FailReply.CODE404; }
+
+    req.user = loggedUser.user;
     //#endregion
 
-    //#region check is Verification agent is correct format to convert
-    if (!InputFormat.base64Format.test("requestVerificationAgent")) { return res.status(FailReply.CODE400.code).send(FailReply.CODE400.data); }
-    //#endregion
-
-    //#region convert verification agent to JSON
-    const requestVerificationData = JSON.parse(Buffer.from(requestVerificationAgent, 'base64').toString('utf8'));
-    //#endregion
-
-    //#region test againts regex formats
-    if (!InputFormat.apiKeyFormat.test(apiKey) || apiKey.length != process.env.API_KEY_STRING_LENGTH ||
-        !InputFormat.dateTimeFormat.test(requestVerificationData.request_time)
-    ) { return res.status(FailReply.CODE400.code).send(FailReply.CODE400.data); }
-    //#endregion
-
-    //#region Verify Account
-    const user = await FindOneByKey(apiKey);
-    if (user.errorId != null) { return res.status(FailReply.CODE500.code).send(FailReply.CODE500.data); }
-    if (user.user == null) { return res.status(FailReply.CODE404.code).send(FailReply.CODE404.data); }
-    req.user = user.user;
-    //#endregion
+    const timeNow = new Date();
 
     //#region test for call timeout
-    let comparedDate = new Date();
+    if (req.user.APIKey.LastUsed != undefined || req.user.APIKey.LastUsed != null) {
 
-    if (req.user.DateLastRequest != undefined || req.user.DateLastRequest != null) {
         //difference in sec
-        const diffInSec = (Math.abs(req.user.DateLastRequest - comparedDate)) / 1000;
-
+        const diffInSec = Math.abs((timeNow.getTime() - req.user.APIKey.LastUsed.getTime()) / 1000);
         //the min sec between a call per person
         const timeDifferenceRequired = 60 / process.env.API_CALL_LIMIT;
 
         //check time difference limit is satisfied
-        if (diffInSec <= timeDifferenceRequired) { return res.status(FailReply.CODE500.code).send(FailReply.CODE500.data); }
+        if (diffInSec <= timeDifferenceRequired) { return FailReply.CODE500; }
     }
     //#endregion
 
     //#region update last request time
-    const updatedTimeUser = await UpdateRequestTimeStamp(req.user._id, comparedDate);
-    if (updatedTimeUser.errorId != null) { return res.status(FailReply.CODE500.code).send(FailReply.CODE500.data); }
+    const updatedTimeUser = await UpdateRequestTimeStamp(req.user._id, timeNow);
+    if (updatedTimeUser.errorId != null) { return FailReply.CODE500; }
     //#endregion
 
     next();
@@ -125,6 +110,7 @@ const AuthoriseUserRole = (neededRoles) => {
 
 //#region Support methods
 const TestFieldsFilled = (input) => {
+    //#region test if all fields required are filled
     if (input.length == 0) {
         return false;
     }
@@ -147,12 +133,19 @@ const TestValidateEmailFormat = (email) => {
     }
     return true;
 };
+const TestValidateBase64Format = (apiKey) => {
+    const apiKeyFormat = /^[0-9a-zA-Z]+$/;
+    if (!apiKeyFormat.test(apiKey)) {
+        return false;
+    }
+    return true;
+};
 //#endregion
 
 //#region Export Methods
 module.exports = {
     ValidateUserByCredentials,
-    ValidateRequest,
+    ValidateUserByApiKey,
     ValidateDevice,
     AuthoriseUserRole,
 };

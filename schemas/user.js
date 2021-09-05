@@ -38,9 +38,6 @@ const userSchema = new mongoose.Schema({
     Devices: {
         type: [mongooseSchemaDevice],
     },
-    DateLastRequest: {
-        type: Date,
-    },
     Active: {
         type: Boolean,
         default: true,

@@ -11,6 +11,10 @@ const apiSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    LastUsed: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
 module.exports = apiSchema;
