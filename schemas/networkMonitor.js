@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const mongooseSchemaSpeedTest = require('../schemas/speedtest');
 
 //create a model via a Schema
-const notificationSchema = new mongoose.Schema({
+const networkMonitorSchema = new mongoose.Schema({
     UserId: {
         type: String,
         require: true,
@@ -14,16 +14,15 @@ const notificationSchema = new mongoose.Schema({
     },
     LogDate: {
         type: Date,
-        default: Date.now,
     },
     LogType: {
         type: String,
         enum: ['SpeedTest'],
         require: true,
     },
-    speedTest: {
+    SpeedTest: {
         type: [mongooseSchemaSpeedTest],
     },
 });
 
-module.exports = notificationSchema;
+module.exports = networkMonitorSchema;
