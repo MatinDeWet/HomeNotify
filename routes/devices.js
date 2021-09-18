@@ -10,7 +10,7 @@ const {
 
 
 //#region GET
-deviceRouter.get('/findall', API.ValidateUserByApiKey, async(req, res) => {
+deviceRouter.get('/findall', API.ValidateUserByCredentials, async(req, res) => {
     const device = FindAllDevices(req.user);
     return res.status(device.code).json(device.data);
 });

@@ -23,7 +23,7 @@ userRouter.get('/viewall', API.ValidateUserByCredentials, API.AuthoriseUserRole(
     return res.status(user.code).json(user.data);
 });
 //view one
-userRouter.get('/viewself', API.AuthoriseUserRole([ROLE.VIEW]), async(req, res) => {
+userRouter.get('/viewself', API.ValidateUserByCredentials, API.AuthoriseUserRole([ROLE.VIEW]), async(req, res) => {
     const user = await GetSingleUserByEmailAndPassword(req.headers.authorization);
     return res.status(user.code).json(user.data);
 });
@@ -31,7 +31,7 @@ userRouter.get('/viewself', API.AuthoriseUserRole([ROLE.VIEW]), async(req, res) 
 
 //#region POST
 //create one
-userRouter.post('/createone', API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
+userRouter.post('/createone', API.ValidateUserByCredentials, API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
     const user = await CreateUser(req.body.name, req.headers.authorization, req.body.userRoles);
     return res.status(user.code).json(user.data);
 });
@@ -45,7 +45,7 @@ userRouter.post('/createapikey', API.ValidateUserByCredentials, API.AuthoriseUse
 //#endregion
 
 //#region DELETE
-userRouter.delete('/deleteone', API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
+userRouter.delete('/deleteone', API.ValidateUserByCredentials, API.AuthoriseUserRole([ROLE.SUPERADMIN]), async(req, res) => {
 
     const user = await DeleteUser(req.headers.authorization);
     return res.status(user.code).json(user.data);
