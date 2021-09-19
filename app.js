@@ -39,3 +39,6 @@ app.use('/device', deviceRouter);
 const networkMonitorRouter = require('./routes/networkMonitor');
 app.use('/networkmonitor', networkMonitorRouter);
 //#endregion
+
+const { GetDaysSolarWeather } = require('./ScheduledTasks/solar');
+GetDaysSolarWeather();
